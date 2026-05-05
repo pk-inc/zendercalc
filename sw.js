@@ -1,6 +1,6 @@
 const CACHE_NAME = 'zender-fx-v1';
 const ASSETS = [
-  './zender_calculator.html',
+  './index.html',
   './manifest.json',
   './Zender Finance Limited Logo Design-04.png',
   './Zender Finance Limited Logo Design-01.jpg (1).jpeg',
@@ -41,7 +41,7 @@ self.addEventListener('fetch', event => {
         return response;
       }).catch(() => {
         // Offline fallback
-        return caches.match('./zender_calculator.html');
+        return caches.match('./index.html');
       });
     })
   );
