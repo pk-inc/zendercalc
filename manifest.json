@@ -2,7 +2,7 @@
   "name": "Zender FX — Deal Calculator",
   "short_name": "Zender FX",
   "description": "Zender Finance Limited FX Deal Calculator",
-  "start_url": "./zender_calculator.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
