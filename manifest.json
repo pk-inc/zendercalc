@@ -1,0 +1,18 @@
+{
+  "name": "Zender FX — Deal Calculator",
+  "short_name": "Zender FX",
+  "description": "Zender Finance Limited FX Deal Calculator",
+  "start_url": "./zender_calculator.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#1a2a4a",
+  "icons": [
+    {
+      "src": "Zender Finance Limited Logo Design-01.jpg (1).jpeg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Zender FX — Deal Calculator</title>
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1a2a4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Zender FX">
+<link rel="apple-touch-icon" href="./Zender Finance Limited Logo Design-01.jpg (1).jpeg">
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f5f7fa;--surface:#fff;--surface-2:#f0f2f6;
+    --border:#dde1ea;--border-strong:#c8cdd9;
+    --green:#00875A;--green-dim:rgba(0,135,90,.10);--green-glow:rgba(0,135,90,.20);
+    --navy:#1a2a4a;--navy-mid:#2e4070;
+    --text:#1a2a4a;--text-sub:#4a5578;--muted:#8a94ae;
+    --red:#c0392b;--amber:#b45309;
+    --amber-bg:rgba(180,83,9,.08);--red-bg:rgba(192,57,43,.08);
+  }
+  html,body{min-height:100vh;background:var(--bg);font-family:'Inter','Segoe UI',Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+  #app{max-width:480px;margin:0 auto;padding:0 0 72px}
+
+  /* HEADER */
+  .header{padding:.85rem 1.25rem;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-bottom:1px solid var(--border)}
+  .header-logo{max-height:44px;max-width:200px;width:auto;object-fit:contain;display:block}
+  .clock{text-align:right;font-size:13px;color:var(--muted);line-height:1.5;font-variant-numeric:tabular-nums}
+
+  /* PANELS */
+  .panel{display:none;padding:1.25rem;flex-direction:column;gap:1rem}
+  .panel.active{display:flex}
+
+  .field-label{font-size:10px;color:var(--muted);letter-spacing:.16em;margin-bottom:6px;text-transform:uppercase;font-weight:600}
+  .input-field{width:100%;padding:13px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;color:var(--navy);font-size:22px;font-family:'Roboto Mono','Courier New',monospace;font-weight:500;outline:none;transition:border-color .2s,box-shadow .2s}
+  .input-field:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* STATUS */
+  .status-badge{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;letter-spacing:.02em;display:flex;align-items:center;gap:8px;transition:all .3s}
+  .status-badge.strong{background:var(--green-dim);border:1.5px solid rgba(0,135,90,.25);color:var(--green)}
+  .status-badge.fair{background:var(--amber-bg);border:1.5px solid rgba(180,83,9,.25);color:var(--amber)}
+  .status-badge.weak{background:var(--red-bg);border:1.5px solid rgba(192,57,43,.25);color:var(--red)}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .strong .dot{background:var(--green)}.fair .dot{background:var(--amber)}.weak .dot{background:var(--red)}
+
+  /* RESULT CARDS */
+  .result-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px}
+  .result-label{font-size:9px;color:var(--muted);letter-spacing:.18em;margin-bottom:6px;font-weight:600;text-transform:uppercase}
+  .result-value{font-size:21px;font-weight:700;color:var(--navy);font-family:'Roboto Mono',monospace}
+  .result-value.green{color:var(--green)}
+  .result-sub{font-size:10px;color:var(--muted);margin-top:4px}
+
+  /* SLIDER */
+  .slider-section{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem}
+  .slider-title{font-size:9px;color:var(--muted);letter-spacing:.20em;margin-bottom:1rem;font-weight:600;text-transform:uppercase}
+  .slider-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .slider-label{font-size:12px;color:var(--text-sub);white-space:nowrap;font-weight:500}
+  .slider-val{font-size:13px;color:var(--green);font-weight:700;min-width:32px;text-align:right;font-family:'Roboto Mono',monospace}
+  input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--green);cursor:pointer;box-shadow:0 0 6px var(--green-glow)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--green);cursor:pointer;border:none}
+  .slider-info{background:var(--surface-2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;min-height:52px;border:1px solid var(--border)}
+
+  /* SAVE BTN */
+  .save-btn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;letter-spacing:.04em;cursor:pointer;transition:opacity .2s}
+  .save-btn:hover{opacity:.88}
+  .save-btn:active{transform:scale(.98)}
+  .save-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--navy);color:#fff;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:99;opacity:0;transition:all .35s}
+  .save-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+  /* CURRENCY SELECT */
+  .currency-select{background:var(--surface-2);border:1.5px solid var(--border);border-radius:8px;color:var(--navy);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:6px 10px;outline:none;cursor:pointer;float:right;margin-top:-2px;transition:border-color .2s}
+  .currency-select:focus{border-color:var(--green)}
+  .field-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+
+  /* BOTTOM NAV */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1.5px solid var(--border);display:flex;max-width:480px;margin:0 auto;box-shadow:0 -2px 12px rgba(26,42,74,.06);z-index:50}
+  .nav-item{flex:1;padding:12px 0;text-align:center;font-size:9px;letter-spacing:.14em;color:var(--muted);cursor:pointer;transition:color .2s;display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:600;text-transform:uppercase;-webkit-tap-highlight-color:transparent}
+  .nav-item.active{color:var(--green)}
+  .nav-icon{font-size:18px}
+
+  /* HISTORY PANEL */
+  .hist-header{display:flex;justify-content:space-between;align-items:center}
+  .panel-title{font-size:16px;font-weight:700;color:var(--navy)}
+  .clear-btn{font-size:11px;color:var(--red);font-weight:600;cursor:pointer;padding:6px 12px;border:1.5px solid var(--red-bg);border-radius:8px;background:var(--red-bg);transition:opacity .2s;-webkit-tap-highlight-color:transparent}
+  .hist-item{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .2s;-webkit-tap-highlight-color:transparent}
+  .hist-item:active{border-color:var(--green)}
+  .hist-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .hist-curr{font-size:12px;font-weight:700;color:var(--navy)}
+  .hist-time{font-size:10px;color:var(--muted)}
+  .hist-row{display:flex;gap:16px;font-size:12px;color:var(--text-sub);line-height:1.7}
+  .hist-profit{font-weight:700;color:var(--green)}
+  .hist-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:13px}
+
+  /* STATS PANEL */
+  .stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:16px}
+  .stat-label{font-size:9px;color:var(--muted);letter-spacing:.18em;font-weight:600;text-transform:uppercase;margin-bottom:6px}
+  .stat-value{font-size:24px;font-weight:700;color:var(--navy);font-family:'Roboto Mono',monospace}
+  .stat-value.green{color:var(--green)}
+  .stat-sub{font-size:10px;color:var(--muted);margin-top:3px}
+  .breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+  .breakdown-row:last-child{border-bottom:none}
+  .breakdown-curr{font-size:13px;font-weight:600;color:var(--navy)}
+  .breakdown-count{font-size:12px;color:var(--muted)}
+  .breakdown-profit{font-size:13px;font-weight:700;color:var(--green);font-family:'Roboto Mono',monospace}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="header">
+    <img class="header-logo" src="./Zender Finance Limited Logo Design-04.png" alt="Zender Finance Limited">
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <!-- CALC PANEL -->
+  <div class="panel active" id="panelCalc">
+    <div>
+      <div class="field-header">
+        <div class="field-label">AMOUNT</div>
+        <select class="currency-select" id="currencySelect" onchange="calc()">
+          <option value="USD">USD 🇺🇸</option>
+          <option value="GBP">GBP 🇬🇧</option>
+          <option value="EUR">EUR 🇪🇺</option>
+          <option value="CAD">CAD 🇨🇦</option>
+        </select>
+      </div>
+      <input type="number" class="input-field" id="amount" value="10000" oninput="calc()" placeholder="0">
+    </div>
+    <div class="two-col">
+      <div><div class="field-label">MARKET RATE (₦)</div><input type="number" class="input-field" id="marketRate" value="1500" oninput="calc()" style="font-size:20px"></div>
+      <div><div class="field-label">CLIENT RATE (₦)</div><input type="number" class="input-field" id="clientRate" value="1530" oninput="calc()" style="font-size:20px"></div>
+    </div>
+    <div class="status-badge strong" id="statusBadge"><div class="dot"></div><span id="statusText">Strong deal — margin above 2%</span></div>
+    <div class="two-col">
+      <div class="result-card"><div class="result-label">MARGIN / <span id="currLabel">USD</span></div><div class="result-value green" id="rMarginUnit">₦30</div></div>
+      <div class="result-card"><div class="result-label">MARGIN %</div><div class="result-value" id="rMarginPct">2.00%</div></div>
+    </div>
+    <div class="two-col">
+      <div class="result-card"><div class="result-label">PROFIT (₦)</div><div class="result-value green" id="rProfitNGN">₦300,000</div></div>
+      <div class="result-card"><div class="result-label">PROFIT (<span id="currLabel2">$</span>)</div><div class="result-value" id="rProfitFX">$196.08</div></div>
+    </div>
+    <div class="two-col">
+      <div class="result-card"><div class="result-label">SPREAD (PIPS)</div><div class="result-value" id="rPips">300</div><div class="result-sub">1 pip = ₦0.1</div></div>
+      <div class="result-card"><div class="result-label">CLIENT GETS (₦)</div><div class="result-value" id="rClientGets">₦15.30M</div></div>
+    </div>
+    <div class="slider-section">
+      <div class="slider-title">DISCOUNT LEVER</div>
+      <div class="slider-row">
+        <div class="slider-label">Drop by (bps)</div>
+        <input type="range" id="bpsSlider" min="0" max="200" step="5" value="0" oninput="onSlider()">
+        <div class="slider-val" id="bpsVal">0</div>
+      </div>
+      <div class="slider-info" id="sliderInfo">Adjust slider to simulate a rate drop during negotiation.</div>
+    </div>
+    <button class="save-btn" onclick="saveDeal()">SAVE DEAL</button>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="panelHistory">
+    <div class="hist-header">
+      <div class="panel-title">Deal History</div>
+      <div class="clear-btn" onclick="clearHistory()">Clear All</div>
+    </div>
+    <div id="histList"></div>
+  </div>
+
+  <!-- STATS PANEL -->
+  <div class="panel" id="panelStats">
+    <div class="panel-title">Performance Stats</div>
+    <div class="two-col">
+      <div class="stat-card"><div class="stat-label">TOTAL DEALS</div><div class="stat-value" id="sTotalDeals">0</div></div>
+      <div class="stat-card"><div class="stat-label">AVG MARGIN</div><div class="stat-value" id="sAvgMargin">0%</div></div>
+    </div>
+    <div class="stat-card"><div class="stat-label">TOTAL PROFIT (₦)</div><div class="stat-value green" id="sTotalProfit">₦0</div></div>
+    <div class="stat-card"><div class="stat-label">BEST DEAL PROFIT (₦)</div><div class="stat-value green" id="sBestDeal">₦0</div><div class="stat-sub" id="sBestDealSub"></div></div>
+    <div class="stat-card">
+      <div class="stat-label">BREAKDOWN BY CURRENCY</div>
+      <div id="sBreakdown"><div class="hist-empty">No data yet.</div></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('calc')"><div class="nav-icon">⊞</div>CALC</div>
+    <div class="nav-item" onclick="switchTab('history')"><div class="nav-icon">◷</div>HISTORY</div>
+    <div class="nav-item" onclick="switchTab('stats')"><div class="nav-icon">↑↓</div>STATS</div>
+  </div>
+</div>
+
+<div class="save-toast" id="toast">Deal saved ✓</div>
+
+<script>
+  // ─── CLOCK ───
+  function startClock(){function t(){const n=new Date();document.getElementById('clock').innerHTML=n.toTimeString().slice(0,8)+'<br>'+n.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}t();setInterval(t,1000)}
+
+  // ─── TAB SWITCHING ───
+  function switchTab(tab){
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    const map={calc:0,history:1,stats:2};
+    document.querySelectorAll('.nav-item')[map[tab]].classList.add('active');
+    document.getElementById('panel'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+    if(tab==='history') renderHistory();
+    if(tab==='stats') renderStats();
+  }
+
+  // ─── FORMATTING ───
+  const SYMBOLS={USD:'$',GBP:'£',EUR:'€',CAD:'CA$'};
+  function fmtNGN(n){if(Math.abs(n)>=1e9)return'₦'+(n/1e9).toFixed(2)+'B';if(Math.abs(n)>=1e6)return'₦'+(n/1e6).toFixed(2)+'M';if(Math.abs(n)>=1e3)return'₦'+n.toLocaleString('en');return'₦'+n.toFixed(2)}
+  function fmtFX(n,s){return s+n.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+  // ─── CALC ───
+  function calc(){
+    const amount=parseFloat(document.getElementById('amount').value)||0;
+    const marketRate=parseFloat(document.getElementById('marketRate').value)||0;
+    const clientRate=parseFloat(document.getElementById('clientRate').value)||0;
+    const currency=document.getElementById('currencySelect').value;
+    const sym=SYMBOLS[currency];
+    const bps=parseInt(document.getElementById('bpsSlider').value)||0;
+    const adj=clientRate-(bps*0.1);
+    const mpu=adj-marketRate,pct=marketRate>0?(mpu/marketRate)*100:0;
+    const pNGN=mpu*amount,pFX=adj>0?pNGN/adj:0;
+    const pips=Math.round((adj-marketRate)*10),cGets=adj*amount;
+    document.getElementById('currLabel').textContent=currency;
+    document.getElementById('currLabel2').textContent=sym;
+    document.getElementById('rMarginUnit').textContent='₦'+mpu.toFixed(2);
+    document.getElementById('rMarginPct').textContent=pct.toFixed(2)+'%';
+    document.getElementById('rProfitNGN').textContent=fmtNGN(pNGN);
+    document.getElementById('rProfitFX').textContent=fmtFX(pFX,sym);
+    document.getElementById('rPips').textContent=pips;
+    document.getElementById('rClientGets').textContent=fmtNGN(cGets);
+    const b=document.getElementById('statusBadge'),t=document.getElementById('statusText');
+    b.className='status-badge';
+    if(pct>=2){b.classList.add('strong');t.textContent='Strong deal — margin above 2%'}
+    else if(pct>=1){b.classList.add('fair');t.textContent='Fair deal — margin between 1% and 2%'}
+    else if(pct>0){b.classList.add('weak');t.textContent='Thin deal — margin below 1%'}
+    else{b.classList.add('weak');t.textContent='No margin — review rates'}
+    updateSliderInfo(bps,adj,pNGN,marketRate,clientRate);
+  }
+  function onSlider(){document.getElementById('bpsVal').textContent=document.getElementById('bpsSlider').value;calc()}
+  function updateSliderInfo(bps,adj,profit){
+    const info=document.getElementById('sliderInfo');
+    if(bps===0){info.textContent='Adjust slider to simulate a rate drop during negotiation.'}
+    else{const d=(bps*0.1).toFixed(1);info.innerHTML=`At <strong style="color:var(--green)">${bps} bps</strong> discount — rate drops by ₦${d} to <strong style="color:var(--navy)">₦${adj.toFixed(2)}</strong>. Profit: <strong style="color:var(--green)">${fmtNGN(profit)}</strong>`}
+  }
+
+  // ─── LOCALSTORAGE ───
+  function getDeals(){try{return JSON.parse(localStorage.getItem('zfx_deals'))||[]}catch(e){return[]}}
+  function saveDeals(d){localStorage.setItem('zfx_deals',JSON.stringify(d))}
+
+  // ─── SAVE DEAL ───
+  function saveDeal(){
+    const amount=parseFloat(document.getElementById('amount').value)||0;
+    const marketRate=parseFloat(document.getElementById('marketRate').value)||0;
+    const clientRate=parseFloat(document.getElementById('clientRate').value)||0;
+    const currency=document.getElementById('currencySelect').value;
+    const bps=parseInt(document.getElementById('bpsSlider').value)||0;
+    const adj=clientRate-(bps*0.1);
+    const mpu=adj-marketRate,pct=marketRate>0?(mpu/marketRate)*100:0;
+    const profitNGN=mpu*amount;
+    const deal={id:Date.now(),ts:new Date().toISOString(),currency,amount,marketRate,clientRate:adj,marginPct:pct,profitNGN,bps};
+    const deals=getDeals();deals.unshift(deal);
+    if(deals.length>100)deals.length=100;
+    saveDeals(deals);
+    const toast=document.getElementById('toast');toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'),1800);
+  }
+
+  // ─── HISTORY RENDER ───
+  function renderHistory(){
+    const list=document.getElementById('histList');
+    const deals=getDeals();
+    if(!deals.length){list.innerHTML='<div class="hist-empty">No deals saved yet.<br>Calculate a deal and tap SAVE DEAL.</div>';return}
+    let html='';
+    deals.forEach(d=>{
+      const dt=new Date(d.ts);
+      const time=dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      const date=dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+      html+=`<div class="hist-item" onclick="loadDeal(${d.id})">
+        <div class="hist-top"><span class="hist-curr">${d.currency} ${SYMBOLS[d.currency]}${d.amount.toLocaleString('en')}</span><span class="hist-time">${time} · ${date}</span></div>
+        <div class="hist-row"><span>Mkt ₦${d.marketRate}</span><span>Client ₦${d.clientRate}</span><span class="hist-profit">${fmtNGN(d.profitNGN)}</span></div>
+      </div>`;
+    });
+    list.innerHTML=html;
+  }
+
+  // ─── LOAD DEAL INTO CALC ───
+  function loadDeal(id){
+    const d=getDeals().find(x=>x.id===id);if(!d)return;
+    document.getElementById('amount').value=d.amount;
+    document.getElementById('marketRate').value=d.marketRate;
+    document.getElementById('clientRate').value=d.clientRate;
+    document.getElementById('currencySelect').value=d.currency;
+    document.getElementById('bpsSlider').value=0;
+    document.getElementById('bpsVal').textContent='0';
+    switchTab('calc');calc();
+  }
+
+  // ─── CLEAR HISTORY ───
+  function clearHistory(){if(confirm('Clear all deal history?')){saveDeals([]);renderHistory()}}
+
+  // ─── STATS RENDER ───
+  function renderStats(){
+    const deals=getDeals();
+    const n=deals.length;
+    document.getElementById('sTotalDeals').textContent=n;
+    if(!n){
+      document.getElementById('sAvgMargin').textContent='—';
+      document.getElementById('sTotalProfit').textContent='₦0';
+      document.getElementById('sBestDeal').textContent='₦0';
+      document.getElementById('sBestDealSub').textContent='';
+      document.getElementById('sBreakdown').innerHTML='<div class="hist-empty">No data yet.</div>';
+      return;
+    }
+    const totalProfit=deals.reduce((s,d)=>s+d.profitNGN,0);
+    const avgMargin=deals.reduce((s,d)=>s+d.marginPct,0)/n;
+    const best=deals.reduce((a,b)=>a.profitNGN>b.profitNGN?a:b);
+    document.getElementById('sAvgMargin').textContent=avgMargin.toFixed(2)+'%';
+    document.getElementById('sTotalProfit').textContent=fmtNGN(totalProfit);
+    document.getElementById('sBestDeal').textContent=fmtNGN(best.profitNGN);
+    const bd=new Date(best.ts);
+    document.getElementById('sBestDealSub').textContent=`${best.currency} ${SYMBOLS[best.currency]}${best.amount.toLocaleString('en')} · ${bd.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`;
+    // Breakdown by currency
+    const byCurr={};
+    deals.forEach(d=>{if(!byCurr[d.currency])byCurr[d.currency]={count:0,profit:0};byCurr[d.currency].count++;byCurr[d.currency].profit+=d.profitNGN});
+    let bhtml='';
+    Object.keys(byCurr).sort().forEach(c=>{
+      bhtml+=`<div class="breakdown-row"><span class="breakdown-curr">${c}</span><span class="breakdown-count">${byCurr[c].count} deal${byCurr[c].count>1?'s':''}</span><span class="breakdown-profit">${fmtNGN(byCurr[c].profit)}</span></div>`;
+    });
+    document.getElementById('sBreakdown').innerHTML=bhtml;
+  }
+
+  // ─── INIT ───
+  startClock();calc();
+  if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})})}
+</script>
+</body>
+</html>
